@@ -1,6 +1,7 @@
 const express = require('express');
 const controller = require('./controller');
 const getCardRoutes = require('../card/index');
+const getSRRoutes = require('../sr/index');
 
 const getRoutes = () => {
     const router = express.Router();
@@ -16,7 +17,8 @@ const getRoutes = () => {
         .route('/:setId')
         .delete(controller.deleteSet.bind(controller));
 
-    router.use('/:setId/card', getCardRoutes())
+    router.use('/:setId/card', getCardRoutes());
+    router.use('/:setId/sr', getSRRoutes());
 
     return router;
 }
