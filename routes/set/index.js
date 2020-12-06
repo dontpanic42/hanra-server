@@ -15,7 +15,8 @@ const getRoutes = () => {
 
     router
         .route('/:setId')
-        .delete(controller.deleteSet.bind(controller));
+        .delete(controller.deleteSet.bind(controller))
+        .get(   controller.getSetDetails.bind(controller));
 
     router.use('/:setId/card', getCardRoutes());
     router.use('/:setId/sr', getSRRoutes());

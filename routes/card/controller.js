@@ -14,13 +14,15 @@ class CardController {
     */
     async getAllCards(req, res, next) {
         const setId = parseInt(req.params.setId, 10);
+        let page  = parseInt(req.query.page, 10);
+        page = isNaN(page) ? 0 : page;
+        
+        let pageSize = parseInt(req.query.pageSize, 10);
+        pageSize = isNaN(pageSize)? 10 : Math.min(100, pageSize);
 
         try {
-            const result = await model.getAllCards(DEFAULT_USER_ID, setId);
-            res.json({
-                page: 0,
-                cards: result
-            });
+            const result = await model.getAllCards(DEFAULT_USER_ID, setId, page, pageSize);
+            res.json(result);
         } catch(e) {
             return next(e);
         }
@@ -53,6 +55,36 @@ class CardController {
             res.status(201).json({message: 'ok', cardId: result.cardId});
 
         } catch(e) {
+            return next(e);
+        }
+    }
+
+    /**
+     * Delete a given card
+     * @param {*} req 
+     * @param {*} res 
+     * @param {*} next 
+     */
+    async deleteCard(req, res, next) {
+        const setId = parseInt(req.params.setId, 10);
+        const cardId = parseInt(req.params.cardId, 10);
+
+        if(isNaN(setId)) {
+            return res.status(400).json({message: 'missing or invalid setId'});
+        } 
+
+        if(isNaN(cardId)) {
+            return res.status(400).json({message: 'missing or invalid cardId'});
+        } 
+
+        try {
+            const result = await model.deleteCard(DEFAULT_USER_ID, setId, cardId);
+            if(result.numDeleted == 0) {
+                return res.status(404).json({message: 'not found'});
+            } else {
+                return res.status(200).json({message: 'ok'})
+            }
+        } catch (e) {
             return next(e);
         }
     }

@@ -25,6 +25,30 @@ class SetController {
     }
 
     /**
+     * Returns a single set
+     * @param {*} req 
+     * @param {*} res 
+     * @param {*} next 
+     */
+    async getSetDetails(req, res, next) {
+        const setId = parseInt(req.params.setId, 10);
+        if(isNaN(setId)) {
+            return res.status(400).json({message: 'missing or invalid setId'});
+        } 
+
+        try {
+            const result = await model.getSetDetails(DEFAULT_USER_ID, setId);
+            if(!result) {
+                return res.status(404).json({message: 'set not found'});
+            }
+            
+            return res.json(result);
+        } catch(e) {
+            return next(e);
+        }
+    }
+
+    /**
      * Creates a new set
      * @param {*} req 
      * @param {*} res 
@@ -54,6 +78,9 @@ class SetController {
      */
     async deleteSet(req, res, next) {
         const setId = parseInt(req.params.setId, 10);
+        if(isNaN(setId)) {
+            return res.status(400).json({message: 'missing or invalid setId'});
+        } 
 
         try {
             const result = await model.deleteSet(DEFAULT_USER_ID, setId);

@@ -27,6 +27,37 @@ class SetModel {
     }
 
     /**
+     * 
+     * @param {Number} ownerId id of the owner of the set 
+     * @param {Number} id of the set to get details for
+     */
+    async getSetDetails(ownerId, setId) {
+        const readQuery = `
+            SELECT
+                id,
+                ownerId,
+                setName,
+                setDescription
+            FROM
+                HanraSet
+            WHERE
+                id = :setId AND
+                ownerId = :ownerId
+        `;
+
+        const set = await this.db.get(readQuery, {
+            ':setId': setId,
+            ':ownerId': ownerId
+        });
+
+        if(!set) {
+            return undefined;
+        }
+
+        return set;
+    }
+
+    /**
      * Creates a new set
      * @param {Number} ownerId User Id of the owner of the set 
      * @param {String} setName Name of the set 

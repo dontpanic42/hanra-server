@@ -15,20 +15,58 @@ class CardModel {
      * Returns all sets for a given owner
      * @param {Number} ownerId 
      */
-    async getAllCards(ownerId, setId) {
-        const result = await this.db.all(`SELECT * FROM ${TBL_CARD} WHERE ${COL_CARD_OWNER} = :ownerId AND ${COL_CARD_SET} = :setId`, {
+    async getAllCards(ownerId, setId, page = 0, pageSize = 10) {
+        // Count all items to we know how many pages there are
+        const countQuery = `
+            SELECT 
+                COUNT(*) as numItems
+            FROM 
+                ${TBL_CARD} 
+            WHERE 
+                ${COL_CARD_OWNER} = :ownerId AND 
+                ${COL_CARD_SET} = :setId
+        `
+
+        const countResult = await this.db.get(countQuery, {
             ':ownerId': ownerId,
-            ':setId': setId
+            ':setId': setId,
         });
 
-        return result.map((e) => ({
-            id: e[COL_CARD_ID],
-            owner: e[COL_CARD_OWNER],
-            set: e[COL_CARD_SET],
-            question: e[COL_CARD_Q],
-            answerLine1: e[COL_CARD_AL1],
-            answerLine2: e[COL_CARD_AL2]
-        }));
+        // Read the actual page
+        const readQuery = `
+            SELECT 
+                *
+            FROM 
+                ${TBL_CARD} 
+            WHERE 
+                ${COL_CARD_OWNER} = :ownerId AND 
+                ${COL_CARD_SET} = :setId
+            LIMIT
+                :pageSize
+            OFFSET
+                :offset
+        `;
+
+        const result = await this.db.all(readQuery, {
+            ':ownerId': ownerId,
+            ':setId': setId,
+            ':pageSize': pageSize,
+            ':offset': page * pageSize
+        });
+
+        return {
+            page: page,
+            pageSize: pageSize,
+            numPages: countResult.numItems == 0 ? 1 : Math.ceil(countResult.numItems / pageSize),
+            cards: result.map((e) => ({
+                id: e[COL_CARD_ID],
+                owner: e[COL_CARD_OWNER],
+                set: e[COL_CARD_SET],
+                question: e[COL_CARD_Q],
+                answerLine1: e[COL_CARD_AL1],
+                answerLine2: e[COL_CARD_AL2]
+            }))
+        };
     }
 
     /**
@@ -51,6 +89,31 @@ class CardModel {
         });
 
         return { cardId: result.lastID };
+    }
+
+    /**
+     * Deletes a given card
+     * @param {Number} ownerId 
+     * @param {Number} setId 
+     * @param {Number} cardId 
+     */
+    async deleteCard(ownerId, setId, cardId) {
+        const deleteQuery = `
+            DELETE FROM 
+                ${TBL_CARD} 
+            WHERE 
+                ${COL_CARD_SET}     = :setId AND 
+                ${COL_CARD_OWNER}   = :ownerId AND    
+                ${COL_CARD_ID}      = :cardId
+        `;
+
+        const result = await this.db.run(deleteQuery, {
+            ':setId': setId,
+            ':ownerId': ownerId,
+            ':cardId': cardId
+        });
+
+        return { numDeleted: result.changes };
     }
 
     get db() {

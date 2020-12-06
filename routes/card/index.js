@@ -11,6 +11,10 @@ const getRoutes = () => {
         .get(   controller.getAllCards.bind(controller))
         .post(  controller.createCard.bind(controller));
 
+    router
+        .route('/:cardId')
+        .delete( controller.deleteCard.bind(controller));
+
     return router;
 }
 
