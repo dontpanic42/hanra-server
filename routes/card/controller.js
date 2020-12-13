@@ -60,6 +60,44 @@ class CardController {
     }
 
     /**
+     * Updates question and answer on a given card
+     * @param {*} req 
+     * @param {*} res 
+     * @param {*} next 
+     */
+    async updateCard(req, res, next) {
+        const cardId = parseInt(req.params.cardId, 10);
+        const {question, answerLine1, answerLine2} = req.body;
+
+        if(isNaN(cardId)) {
+            return res.status(400).json({message: 'missing or invalid cardId'});
+        } 
+
+        if(!question || String(question).trim() == '') {
+            return next(new Error("Invalid or missing question!"));
+        }
+
+        if(!answerLine1 || String(answerLine1).trim() == '') {
+            return next(new Error("Invalid or missing answerLine1!"));
+        }
+
+        if(!answerLine2 || String(answerLine2).trim() == '') {
+            return next(new Error("Invalid or missing answerLine2!"));
+        }
+
+        try {
+            const result = await model.updateCard(DEFAULT_USER_ID, cardId, question, answerLine1, answerLine2);
+            if(result.numUpdated == 0) {
+                return res.status(404).json({message: 'not found'});
+            } else {
+                return res.status(200).json({message: 'ok'});
+            }
+        } catch(e) {
+            return next(e);
+        }
+    }
+
+    /**
      * Delete a given card
      * @param {*} req 
      * @param {*} res 

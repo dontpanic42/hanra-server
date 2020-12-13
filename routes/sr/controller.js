@@ -24,7 +24,7 @@ class SRController {
             const result = await model.getSession(DEFAULT_USER_ID, setId, DEFAULT_SESSION_SIZE);
             res.json({
                 page: 0,
-                sets: result
+                cards: result
             });
         } catch(e) {
             return next(e);

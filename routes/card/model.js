@@ -92,6 +92,39 @@ class CardModel {
     }
 
     /**
+     * Updates a given card with the given question and answers while
+     * preserving learn progress
+     * @param {*} ownerId 
+     * @param {*} cardId 
+     * @param {*} question 
+     * @param {*} answerLine1 
+     * @param {*} answerLine2 
+     */
+    async updateCard(ownerId, cardId, question, answerLine1, answerLine2) {
+        const updateQuery = `
+            UPDATE 
+                ${TBL_CARD}
+            SET
+                ${COL_CARD_Q} = :question,
+                ${COL_CARD_AL1} = :answerLine1,
+                ${COL_CARD_AL2} = :answerLine2
+            WHERE
+                ${COL_CARD_ID}      = :cardId AND
+                ${COL_CARD_OWNER}   = :ownerId
+        `;
+
+        const result = await this.db.run(updateQuery, {
+            ':cardId': cardId,
+            ':ownerId': ownerId,
+            ':question': question,
+            ':answerLine1': answerLine1,
+            ':answerLine2': answerLine2
+        });
+
+        return { numUpdated: result.changes };
+    }
+
+    /**
      * Deletes a given card
      * @param {Number} ownerId 
      * @param {Number} setId 

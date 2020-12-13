@@ -25,8 +25,8 @@ class SRModel {
                 ${TBL_CARD}.id, 
                 ${TBL_CARD}.ownerId, 
                 ${TBL_CARD}.question, 
-                ${TBL_CARD}.answer_l1,
-                ${TBL_CARD}.answer_l2,
+                ${TBL_CARD}.answer_l1 as answerLine1,
+                ${TBL_CARD}.answer_l2 as answerLine2,
 
                 IFNULL(${TBL_SRI}.difficulty,           :defaultDifficulty)        difficulty,
                 IFNULL(${TBL_SRI}.daysBetweenReview,    :defaultDaysBetweenReview) daysBetweenReview,

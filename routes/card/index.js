@@ -13,6 +13,7 @@ const getRoutes = () => {
 
     router
         .route('/:cardId')
+        .put   ( controller.updateCard.bind(controller))
         .delete( controller.deleteCard.bind(controller));
 
     return router;
