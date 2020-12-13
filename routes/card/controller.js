@@ -14,14 +14,20 @@ class CardController {
     */
     async getAllCards(req, res, next) {
         const setId = parseInt(req.params.setId, 10);
+
+        // Page (if any)
         let page  = parseInt(req.query.page, 10);
         page = isNaN(page) ? 0 : page;
+
+        // Search query (if any)
+        let query = req.query.query || String();
+        query = query.trim().normalize();
         
         let pageSize = parseInt(req.query.pageSize, 10);
         pageSize = isNaN(pageSize)? 10 : Math.min(100, pageSize);
 
         try {
-            const result = await model.getAllCards(DEFAULT_USER_ID, setId, page, pageSize);
+            const result = await model.getAllCards(DEFAULT_USER_ID, setId, query, page, pageSize);
             res.json(result);
         } catch(e) {
             return next(e);

@@ -12,10 +12,11 @@ class CardModel {
     }
 
     /**
-     * Returns all sets for a given owner
-     * @param {Number} ownerId 
+     * Counds all cards in a given set for a given owner
+     * @param {number} ownerId 
+     * @param {number} setId 
      */
-    async getAllCards(ownerId, setId, page = 0, pageSize = 10) {
+    async countAllCards(ownerId, setId, query) {
         // Count all items to we know how many pages there are
         const countQuery = `
             SELECT 
@@ -24,14 +25,27 @@ class CardModel {
                 ${TBL_CARD} 
             WHERE 
                 ${COL_CARD_OWNER} = :ownerId AND 
-                ${COL_CARD_SET} = :setId
+                ${COL_CARD_SET} = :setId AND
+                (
+                    ${COL_CARD_Q} LIKE :query OR
+                    ${COL_CARD_AL1} LIKE :query OR
+                    ${COL_CARD_AL2} LIKE :query
+                )
         `
-
-        const countResult = await this.db.get(countQuery, {
+        const result = await this.db.get(countQuery, {
             ':ownerId': ownerId,
             ':setId': setId,
+            ':query': `%${query}%`
         });
 
+        return result.numItems;
+    }
+
+    /**
+     * Returns all sets for a given owner
+     * @param {Number} ownerId 
+     */
+    async getAllCards(ownerId, setId, query, page = 0, pageSize = 10) {
         // Read the actual page
         const readQuery = `
             SELECT 
@@ -40,7 +54,12 @@ class CardModel {
                 ${TBL_CARD} 
             WHERE 
                 ${COL_CARD_OWNER} = :ownerId AND 
-                ${COL_CARD_SET} = :setId
+                ${COL_CARD_SET} = :setId AND
+                (
+                    ${COL_CARD_Q} LIKE :query OR
+                    ${COL_CARD_AL1} LIKE :query OR
+                    ${COL_CARD_AL2} LIKE :query
+                )
             ORDER BY 
                 ${COL_CARD_Q} COLLATE NOCASE ASC
             LIMIT
@@ -53,13 +72,17 @@ class CardModel {
             ':ownerId': ownerId,
             ':setId': setId,
             ':pageSize': pageSize,
-            ':offset': page * pageSize
+            ':offset': page * pageSize,
+            ':query': `%${query}%`
         });
+
+        const numCards = await this.countAllCards(ownerId, setId, query);
+        const numPages = numCards == 0 ? 1 : Math.ceil(numCards / pageSize);
 
         return {
             page: page,
             pageSize: pageSize,
-            numPages: countResult.numItems == 0 ? 1 : Math.ceil(countResult.numItems / pageSize),
+            numPages: numPages,
             cards: result.map((e) => ({
                 id: e[COL_CARD_ID],
                 owner: e[COL_CARD_OWNER],
