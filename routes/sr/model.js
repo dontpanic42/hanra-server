@@ -1,3 +1,5 @@
+const SRUtil = require('./util');
+
 const TBL_CARD = 'HanraCard';
 const TBL_SRI = 'HanraSRItem';
 
@@ -61,7 +63,7 @@ class SRModel {
                 :sessionSize
         `;
 
-        return await this.db.all(query, {
+        const result = await this.db.all(query, {
             ':ownerId': ownerId,
             ':setId': setId,
             ':sessionSize': sessionSize,
@@ -69,6 +71,8 @@ class SRModel {
             ':defaultPerformanceRating': DEFAULT_PERFORMANCE_RATING,
             ':defaultDifficulty': DEFAULT_DIFFICULTY
         });
+
+        return SRUtil.shuffle(result || []);
     }
 
     /**
