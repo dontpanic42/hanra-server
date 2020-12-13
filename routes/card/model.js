@@ -41,6 +41,8 @@ class CardModel {
             WHERE 
                 ${COL_CARD_OWNER} = :ownerId AND 
                 ${COL_CARD_SET} = :setId
+            ORDER BY 
+                ${COL_CARD_Q} COLLATE NOCASE ASC
             LIMIT
                 :pageSize
             OFFSET

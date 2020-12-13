@@ -3,7 +3,9 @@ const database = require('../../database/index.js');
 const model = require('./model')(database);
 
 const DEFAULT_USER_ID = 1;
-const DEFAULT_SESSION_SIZE = 10;
+const DEFAULT_SESSION_SIZE = 20;
+const MAX_SESSION_SIZE = 50;
+const MIN_SESSION_SIZE = 2;
 
 class SRController {
 
@@ -18,10 +20,16 @@ class SRController {
     */
     async getSession(req, res, next) {
 
-        const setId = parseInt(req.params.setId, 10);
+        const setId = parseInt(req.params.setId, 10);   
+        let sessionSize  = parseInt(req.query.sessionSize, 10);
+        sessionSize = isNaN(sessionSize) ? DEFAULT_SESSION_SIZE : sessionSize;
+        sessionSize = Math.min(MAX_SESSION_SIZE, sessionSize);
+        sessionSize = Math.max(MIN_SESSION_SIZE, sessionSize);
+
+        console.log('sessionSize', sessionSize);
 
         try {
-            const result = await model.getSession(DEFAULT_USER_ID, setId, DEFAULT_SESSION_SIZE);
+            const result = await model.getSession(DEFAULT_USER_ID, setId, sessionSize);
             res.json({
                 page: 0,
                 cards: result
