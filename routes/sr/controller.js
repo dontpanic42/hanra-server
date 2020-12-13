@@ -26,8 +26,6 @@ class SRController {
         sessionSize = Math.min(MAX_SESSION_SIZE, sessionSize);
         sessionSize = Math.max(MIN_SESSION_SIZE, sessionSize);
 
-        console.log('sessionSize', sessionSize);
-
         try {
             const result = await model.getSession(DEFAULT_USER_ID, setId, sessionSize);
             res.json({
