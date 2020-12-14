@@ -110,7 +110,6 @@ class CardController {
      * @param {*} next 
      */
     async deleteCard(req, res, next) {
-        const setId = parseInt(req.params.setId, 10);
         const cardId = parseInt(req.params.cardId, 10);
 
         if(isNaN(setId)) {
@@ -122,7 +121,7 @@ class CardController {
         } 
 
         try {
-            const result = await model.deleteCard(DEFAULT_USER_ID, setId, cardId);
+            const result = await model.deleteCard(DEFAULT_USER_ID, cardId);
             if(result.numDeleted == 0) {
                 return res.status(404).json({message: 'not found'});
             } else {

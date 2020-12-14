@@ -49,7 +49,12 @@ class CardModel {
         // Read the actual page
         const readQuery = `
             SELECT 
-                *
+                ${COL_CARD_ID},
+                ${COL_CARD_OWNER},
+                ${COL_CARD_SET},
+                ${COL_CARD_Q}, 
+                ${COL_CARD_AL1}, 
+                ${COL_CARD_AL2}
             FROM 
                 ${TBL_CARD} 
             WHERE 
@@ -155,18 +160,16 @@ class CardModel {
      * @param {Number} setId 
      * @param {Number} cardId 
      */
-    async deleteCard(ownerId, setId, cardId) {
+    async deleteCard(ownerId, cardId) {
         const deleteQuery = `
             DELETE FROM 
                 ${TBL_CARD} 
             WHERE 
-                ${COL_CARD_SET}     = :setId AND 
                 ${COL_CARD_OWNER}   = :ownerId AND    
                 ${COL_CARD_ID}      = :cardId
         `;
 
         const result = await this.db.run(deleteQuery, {
-            ':setId': setId,
             ':ownerId': ownerId,
             ':cardId': cardId
         });
