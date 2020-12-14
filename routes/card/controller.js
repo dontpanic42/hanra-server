@@ -112,10 +112,6 @@ class CardController {
     async deleteCard(req, res, next) {
         const cardId = parseInt(req.params.cardId, 10);
 
-        if(isNaN(setId)) {
-            return res.status(400).json({message: 'missing or invalid setId'});
-        } 
-
         if(isNaN(cardId)) {
             return res.status(400).json({message: 'missing or invalid cardId'});
         } 
