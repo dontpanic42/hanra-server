@@ -34,7 +34,7 @@ class HanraDatabase {
 
         // WTF sqlite does not enable foreign key constraints
         // by default, leading to unused entries all over the db...!
-        this._database.exec('PRAGMA foreign_keys=1')
+        this._database.exec('PRAGMA foreign_keys = ON')
 
         // log.info('Starting db migrations')
         // db.migrate({force: 'last'});

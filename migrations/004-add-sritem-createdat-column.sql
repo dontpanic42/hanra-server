@@ -3,6 +3,9 @@
 --------------------------------------------------------------------------------
 
 -- Create a new table in the target format
+
+PRAGMA foreign_keys = OFF;
+
 CREATE TABLE HanraSRItemNew (
     id                      INTEGER PRIMARY KEY,
     ownerId                 INTEGER NOT NULL,
@@ -60,11 +63,15 @@ SET
             HanraCard
         WHERE
             id = HanraSRItem.cardId
-    )
+    );
+
+PRAGMA foreign_keys = ON;
 
 --------------------------------------------------------------------------------
 -- Down
 --------------------------------------------------------------------------------
+
+PRAGMA foreign_keys = OFF;
 
 -- Create a new table in the target format
 CREATE TABLE HanraSRItemNew (
@@ -110,3 +117,5 @@ ALTER TABLE HanraSRItemNew RENAME TO HanraSRItem;
 
 -- Re-create unique index on ownerId and cardId so we can do 'INSERT OR REPLACE INTO...'
 CREATE UNIQUE INDEX idx_unique_sri ON HanraSRItem (ownerId, cardId);
+
+PRAGMA foreign_keys = ON;
