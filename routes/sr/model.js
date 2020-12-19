@@ -1,15 +1,59 @@
+const log = require('log4js').getLogger('srsession');
 const SRUtil = require('./util');
 
 const TBL_CARD = 'HanraCard';
 const TBL_SRI = 'HanraSRItem';
 
-const DEFAULT_DIFFICULTY = 0.3;
 const DEFAULT_DAYS_BETWEEN_REVIEW = 3.0;
 const DEFAULT_PERFORMANCE_RATING = 0.6;
 
 class SRModel {
+
+    static DEFAULT_DIFFICULTY = 0.4;
+
+    static SESSION_CARD_TYPE = Object.freeze({
+        'NEW': 'new',
+        'REVIEW': 'review'
+    });
+
     constructor(database) {
         this._database = database;
+    }
+
+    async getSession(ownerId, setId, settings) {
+        const ratio = settings.srSessionNewItemsRatio;
+        const size = settings.srSessionSize;
+
+        // Getting the cards for the session. Note that we always request a full set of
+        // either, since in the worst case, there either only new or only old cards
+        // Get new cards
+        const newCards = await this.getSessionCards(ownerId, setId, settings, SRModel.SESSION_CARD_TYPE.NEW);
+        // Get review cards
+        const revCards = await this.getSessionCards(ownerId, setId, settings, SRModel.SESSION_CARD_TYPE.REVIEW);
+
+        // Calculate the number of cards we take from the new cards deck and the
+        // review cards deck. Keep in mind that we might have less cards than
+        // the maximum supplied in the settings
+        let numNewCards = Math.min(Math.ceil(size * ratio), newCards.length);
+        // If we don't have enough new cards, fill the rest with review cards
+        let numRevCards = Math.min(size - numNewCards, revCards.length);
+
+        // If we still don't have enough cards, try to fill the rest with new cards
+        if((numNewCards + numRevCards) < settings.srSessionSize) {
+            // Calculate the amount of cards that we still need for a full session
+            const stillRequired = settings.srSessionSize - (numRevCards + numNewCards);
+            // Calculate how many new cards we still have that are unused
+            const newCardsLeft = newCards.length - numNewCards;
+            // Use those cards to fill up the session
+            numNewCards += Math.min(stillRequired, newCardsLeft);
+        }
+
+        const deck = SRUtil.shuffle([
+            ...newCards.slice(0, numNewCards),
+            ...revCards.slice(0, numRevCards)
+        ]);
+
+        return deck;
     }
 
     /**
@@ -17,9 +61,31 @@ class SRModel {
      * 
      * @param {*} ownerId 
      * @param {*} setId 
-     * @param {*} sessionSize 
+     * @param {*} settings 
+     * @param {String} sesstion type (of enum SRModel.SESSION_CARD_TYPE)
      */
-    async getSession(ownerId, setId, sessionSize) {
+    async getSessionCards(ownerId, setId, settings, type = SRModel.SESSION_CARD_TYPE.NEW) {
+
+        let cardAgeCutoffDays = parseInt(settings.srSessionNewCutoffDays, 10);
+        if(isNaN(cardAgeCutoffDays)) {
+            throw new Error('srSessionNewCutoffDays is not a number!!');
+        }
+        cardAgeCutoffDays = `-${Math.abs(cardAgeCutoffDays)} days`;
+
+        let cardAgeWhenClause = '';
+        switch(type) {
+            case SRModel.SESSION_CARD_TYPE.NEW: {
+                cardAgeWhenClause = `IFNULL(${TBL_SRI}.createdAt, datetime('now')) > datetime('now', :cutoff)`;
+                break;
+            }
+            case SRModel.SESSION_CARD_TYPE.REVIEW: {
+                cardAgeWhenClause = `IFNULL(${TBL_SRI}.createdAt, datetime('now')) < datetime('now', :cutoff)`;
+                break;
+            }
+            default: {
+                throw new Error(`Unknown getSessionCards type param ${type}`);
+            }
+        }
 
         //  as percentOverdue
         const query = `
@@ -33,6 +99,7 @@ class SRModel {
                 IFNULL(${TBL_SRI}.difficulty,           :defaultDifficulty)        difficulty,
                 IFNULL(${TBL_SRI}.daysBetweenReview,    :defaultDaysBetweenReview) daysBetweenReview,
                 IFNULL(${TBL_SRI}.dateLastReviewed,     ${TBL_CARD}.createdAt)     dateLastReviewed,
+                IFNULL(${TBL_SRI}.createdAt, ${TBL_CARD}.createdAt)                createdAt,
 
                 CASE
                     WHEN IFNULL(${TBL_SRI}.lastPerformanceRating, :defaultPerformanceRating) < 0.6
@@ -56,7 +123,8 @@ class SRModel {
                 ${TBL_CARD}.ownerId = :ownerId AND
                 ${TBL_CARD}.setId = :setId AND
                 -- We still want a result even if TBL_SRI does not exist
-                (${TBL_SRI}.ownerId = :ownerId OR ${TBL_SRI}.id IS NULL)
+                (${TBL_SRI}.ownerId = :ownerId OR ${TBL_SRI}.id IS NULL) AND
+                ${cardAgeWhenClause}
             ORDER BY
                 percentOverdue DESC
             LIMIT
@@ -66,13 +134,19 @@ class SRModel {
         const result = await this.db.all(query, {
             ':ownerId': ownerId,
             ':setId': setId,
-            ':sessionSize': sessionSize,
+            ':sessionSize': settings.srSessionSize,
             ':defaultDaysBetweenReview': DEFAULT_DAYS_BETWEEN_REVIEW,
             ':defaultPerformanceRating': DEFAULT_PERFORMANCE_RATING,
-            ':defaultDifficulty': DEFAULT_DIFFICULTY
+            ':defaultDifficulty': SRModel.DEFAULT_DIFFICULTY,
+            ':cutoff': cardAgeCutoffDays
         });
 
-        return SRUtil.shuffle(result || []);
+        // Add a new property 'type' to each card
+        // that contains the type for the card
+        return (result || []).map(r => {
+            r.type = type
+            return r;
+        });
     }
 
     /**
@@ -122,17 +196,16 @@ class SRModel {
         const sri = await this.db.get(readQuery, {
             ':ownerId': ownerId,
             ':cardId': cardId,
-            ':defaultDifficulty': DEFAULT_DIFFICULTY,
+            ':defaultDifficulty': SRModel.DEFAULT_DIFFICULTY,
             ':defaultPerformanceRating': DEFAULT_PERFORMANCE_RATING,
             ':defaultDaysBetweenReview': DEFAULT_DAYS_BETWEEN_REVIEW
         });
 
         // sri is only empty when there is no card with the given id that belongs to the given owner
         if(!sri) {
+            log
             throw new Error(`Card with cardId=${cardId} not found for owner ${ownerId}`);
         }
-
-
 
         let difficulty = sri.difficulty;
         // Calculate the difficulty delta based on the SM2+ algorithm
@@ -179,4 +252,4 @@ class SRModel {
 }
 
 
-module.exports = (db) => new SRModel(db);
+module.exports = SRModel;

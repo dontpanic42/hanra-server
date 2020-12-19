@@ -1,6 +1,7 @@
 const express = require('express');
 const getSetRoutes = require('./set/index');
 const getVersionRoutes = require('./version/index');
+const getSettingsRoutes = require('./usersettings/index');
 
 const getRoutes = () => {
     const router = express.Router();
@@ -10,6 +11,7 @@ const getRoutes = () => {
     });
 
     router.use('/set', getSetRoutes());
+    router.use('/settings', getSettingsRoutes())
     router.use('/version', getVersionRoutes());
 
     return router;

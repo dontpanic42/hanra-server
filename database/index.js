@@ -8,9 +8,27 @@ const DEFAULT_DATABASE_MIGRATIONS = './migrations';
 const IN_MEMORY_DATABASE_FILE = ':memory:'
 
 class HanraDatabase {
-    constructor() {
+
+    /**
+     * Instance for the singleton accessor
+     */
+    static _dbInstance = undefined;
+
+    /**
+     * Singleton accessor - creates an instance of the database class
+     * when it does not exist and returns it.
+     */
+    static getInstance() {
+        if(!HanraDatabase._dbInstance) {
+            HanraDatabase._dbInstance = new HanraDatabase();
+        }
+
+        return HanraDatabase._dbInstance;
+    }
+
+    constructor(env = process.env.NODE_ENV) {
         // When unit testing, use an in-memory database
-        if(process.env.NODE_ENV === 'test') {
+        if(env === 'test') {
             log.warn('*** RUNNING WITH IN-MEMORY DB! USE FOR TESTING ONLY! ***');
             this._databaseFilename = IN_MEMORY_DATABASE_FILE;
          } else {
@@ -65,4 +83,4 @@ class HanraDatabase {
     }
 }
 
-module.exports = new HanraDatabase();
+module.exports = HanraDatabase;

@@ -3,7 +3,7 @@ const log4js = require('log4js');
 const cors = require('cors');
 const log4jsConf = require('./config/log4js.json');
 const getRoutes = require('./routes/index.js');
-const db = require('./database/index.js');
+const db = require('./database/index.js').getInstance();
 
 const APP_PORT = process.env.SERVER_PORT ? parseInt(process.env.SERVER_PORT, 10) : 3000;
 

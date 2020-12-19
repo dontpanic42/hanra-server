@@ -9,11 +9,8 @@ const getRoutes = () => {
     
     router
         .route('/')
-        .get(   controller.getSession.bind(controller))
-
-    router
-        .route('/:cardId')
-        .post(validations.validatePerformanceReview, controller.updateSRI.bind(controller))
+        .get(controller.getSettings.bind(controller))
+        .post(validations.validateSettings, controller.setSettings.bind(controller));
 
     return router;
 }

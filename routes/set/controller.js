@@ -1,5 +1,5 @@
 const log = require('log4js').getLogger('set');
-const database = require('../../database/index.js');
+const database = require('../../database/index.js').getInstance();
 const model = require('./model')(database);
 
 const DEFAULT_USER_ID = 1;

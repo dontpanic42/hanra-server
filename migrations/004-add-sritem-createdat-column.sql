@@ -2,6 +2,12 @@
 -- Up
 --------------------------------------------------------------------------------
 
+-- Here we just add a new column "createdAt" to the HanraSRItem table
+-- this is a bigger problem, since sqlite only accepts constant default
+-- values with ALTER TABLE. Since we want a dynamic timestamp by default,
+-- we need to copy the table into a new one (with the target format) and
+-- then delete the old one and rename the new one...
+
 -- Create a new table in the target format
 
 PRAGMA foreign_keys = OFF;

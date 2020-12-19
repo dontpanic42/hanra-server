@@ -1,11 +1,14 @@
 const log = require('log4js').getLogger('sri');
-const database = require('../../database/index.js');
-const model = require('./model')(database);
+const database = require('../../database/index.js').getInstance();
+const SRModel = require('./model');
+const settingsModel = require('../usersettings/model')(database);
 
 const DEFAULT_USER_ID = 1;
 const DEFAULT_SESSION_SIZE = 20;
 const MAX_SESSION_SIZE = 50;
 const MIN_SESSION_SIZE = 2;
+
+const model = new SRModel(database);
 
 class SRController {
 
@@ -21,13 +24,12 @@ class SRController {
     async getSession(req, res, next) {
 
         const setId = parseInt(req.params.setId, 10);   
-        let sessionSize  = parseInt(req.query.sessionSize, 10);
-        sessionSize = isNaN(sessionSize) ? DEFAULT_SESSION_SIZE : sessionSize;
-        sessionSize = Math.min(MAX_SESSION_SIZE, sessionSize);
-        sessionSize = Math.max(MIN_SESSION_SIZE, sessionSize);
 
         try {
-            const result = await model.getSession(DEFAULT_USER_ID, setId, sessionSize);
+            // Fetch user settings
+            const settings = await settingsModel.getSettings(DEFAULT_USER_ID);
+            // Get the session
+            const result = await model.getSession(DEFAULT_USER_ID, setId, settings);
             res.json({
                 page: 0,
                 cards: result
@@ -44,19 +46,11 @@ class SRController {
      * @param {*} next 
      */
     async updateSRI(req, res, next) {
-        const cardId = parseInt(req.params.cardId, 10);
-        const performanceRating = parseFloat(req.body.performanceRating);
-
-        if(isNaN(cardId)) {
-            return next(new Error("Invalid or missing cardId parameter"))
-        }
-
-        if(isNaN(performanceRating)) {
-            return next(new Error("Invalid or missing performanceRating parameter"));
-        }
+        const cardId = req.params.cardId;
+        const performanceRating = req.body.performanceRating;
 
         try {
-            const result = await model.upsertSRI(DEFAULT_USER_ID, cardId, performanceRating);
+            await model.upsertSRI(DEFAULT_USER_ID, cardId, performanceRating);
             res.status(201).json({message: 'ok'});
 
         } catch(e) {
