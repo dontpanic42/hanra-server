@@ -167,6 +167,9 @@ class SRModel {
                 IFNULL(${TBL_SRI}.difficulty,               :defaultDifficulty)         difficulty,
                 IFNULL(${TBL_SRI}.lastPerformanceRating,    :defaultPerformanceRating)  lastPerformanceRating,
                 IFNULL(${TBL_SRI}.daysBetweenReview,        :defaultDaysBetweenReview)  daysBetweenReview,
+                
+                ${TBL_SRI}.dateLastReviewed as SRItemLastReviewAt,
+                ${TBL_SRI}.createdAt as SRItemCreatedAt,
 
                 CASE
                     WHEN IFNULL(${TBL_SRI}.lastPerformanceRating, :defaultPerformanceRating) < 0.6
@@ -229,11 +232,36 @@ class SRModel {
         // Ensure that there is at least one day between reviews
         daysBetweenReview = Math.max(daysBetweenReview, 1.0);
 
+        
+        // Since we are doing a replace, with out specifying this, on every update we would
+        // automatically set the createdAt date to the current timestamp. This is not what we want
+        // to do when the SRItem already existed (i.e. SRItemCreatedAt != null), so we just pass
+        // it through. When the item did *not* yet exist, we just set it to the current date.
+        // Here's where it gets weird: Seems like sqlite returns datetime objects as timestamps, but
+        // it accepts iso timestrings? So basically we need to parse the date we just read and
+        // converting it into an ISO timestamp before putting it back into the db?! 
+        // Anyways, seemt to work well and it's covered extensively by tests, so lets go with it for now
+        const srCreatedAt = (sri.SRItemCreatedAt) ? 
+            new Date(sri.SRItemCreatedAt).toISOString() : 
+            (new Date()).toISOString()
+
         const updateQuery = `
             INSERT OR REPLACE INTO ${TBL_SRI}(
-                ownerId, cardId, difficulty, daysBetweenReview, dateLastReviewed, lastPerformanceRating
+                ownerId, 
+                cardId, 
+                difficulty, 
+                daysBetweenReview, 
+                dateLastReviewed, 
+                lastPerformanceRating,
+                createdAt
             ) VALUES (
-                :ownerId, :cardId, :difficulty, :daysBetweenReview, datetime('now'), :performanceRating
+                :ownerId, 
+                :cardId, 
+                :difficulty, 
+                :daysBetweenReview, 
+                datetime('now'), 
+                :performanceRating,
+                :createdAt
             )
         `;
 
@@ -242,7 +270,8 @@ class SRModel {
             ':cardId': cardId,
             ':difficulty': difficulty,
             ':daysBetweenReview': daysBetweenReview,
-            ':performanceRating': performanceRating
+            ':performanceRating': performanceRating,
+            ':createdAt': srCreatedAt
         });
     }
 

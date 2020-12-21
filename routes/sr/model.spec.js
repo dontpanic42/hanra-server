@@ -512,5 +512,79 @@ describe('SRSession Model', () => {
                 });
             });
         });
+
+        describe('when the card was already learned', () => {
+            let cardId;
+            let createDate;
+            let srItemId;
+            beforeEach(async () => {
+                // Grab a 'random' card id
+                cardId = cardIds[Math.round(NUM_CARDS_SET / 2)];
+
+                createDate = new Date();
+                createDate.setDate(createDate.getDate() - 5);
+
+                const r = await db.run(`
+                    INSERT INTO HanraSRItem(
+                        ownerId, cardId, difficulty, daysBetweenReview,
+                        lastPerformanceRating, dateLastReviewed, createdAt
+                    ) VALUES ( 
+                        :userId, :cardId, 0.0, 0.0, 0.0, :myDate, :myDate
+                    )
+                `, {
+                    ':userId': testUser,
+                    ':cardId': cardId,
+                    ':myDate': createDate
+                });
+
+                srItemId = r.lastID;
+            });
+
+            describe('when upsertSRI is called on the card', () => {
+                beforeEach(async () => {
+                    await testModel.upsertSRI(testUser, cardId, 1.0);
+                });
+
+                it('still only has one SRItem', async () => {
+                    const r = await db.get(`SELECT COUNT(*) AS c FROM HanraSRItem WHERE cardId = ${cardId}`)
+                    expect(r.c).to.be.a('number').that.equals(1);
+                });
+
+                describe('the SRItem', () => {
+                    let item;
+                    beforeEach(async () => {
+                        item = await db.get(`SELECT * FROM HanraSRItem WHERE cardId = ${cardId}`);
+                    });
+
+                    it('exists', () => {
+                        expect(item).to.be.an('object').that.has.property('difficulty')
+                    });
+
+                    it('modify the dateLastReviewed date', () => {
+                        expect(item).to.have.property('dateLastReviewed');
+
+                        const newDate = Date.parse(item.dateLastReviewed);
+                        expect(newDate).not.to.be.NaN;
+
+                        const fiveMinutesAgo = newDate - 5 * 60000
+                        expect(newDate).to.be.greaterThan(fiveMinutesAgo);
+                    });
+                    
+                    it('did not modify the createdAt timestamp', () => {
+                        expect(item).to.have.property('createdAt');
+
+                        const createdAt = Date.parse(item.createdAt);
+                        expect(createdAt).to.be.a('number').that.is.not.NaN;
+
+                        // We do not want to check for equality here due to rounding errors etc., so
+                        // we check that it's in a +- 1 sec interval around the original create date
+                        const oneSecondBeforeCreate = createDate.getTime() - 1000;
+                        const oneSecondAfterCreate = createDate.getTime() + 1000;
+
+                        expect(createdAt).to.be.within(oneSecondBeforeCreate, oneSecondAfterCreate);
+                    });
+                });
+            });
+        });
     });
 });
