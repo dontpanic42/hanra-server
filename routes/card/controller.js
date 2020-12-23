@@ -3,6 +3,7 @@ const database = require('../../database/index.js').getInstance();
 const model = require('./model')(database);
 
 const DEFAULT_USER_ID = 1;
+const DEFAULT_PAGE_SIZE = 10;
 
 class CardController {
 
@@ -13,18 +14,18 @@ class CardController {
      * @param {*} next 
     */
     async getAllCards(req, res, next) {
-        const setId = parseInt(req.params.setId, 10);
+        const { setId } = req.params;
 
-        // Page (if any)
-        let page  = parseInt(req.query.page, 10);
-        page = isNaN(page) ? 0 : page;
+        // page, query and pageSize are optional parameters
+        // so we might need to set them to default values
+        let { page, query, pageSize } = req.query;
+        // toInt() is buggy in express-validator, we need to cast it ourselves :-|
+        page = typeof(page) === 'undefined' ? parseInt(page, 10) : 0;
+        pageSize = typeof(pageSize) === 'undefined' ? parseInt(pageSize, 10) : DEFAULT_PAGE_SIZE;
+        query = query || String();
 
-        // Search query (if any)
-        let query = req.query.query || String();
-        query = query.trim().normalize();
-        
-        let pageSize = parseInt(req.query.pageSize, 10);
-        pageSize = isNaN(pageSize)? 10 : Math.min(100, pageSize);
+        console.log('got page', page, typeof(page));
+        console.log('got pageSize', pageSize, typeof(pageSize));
 
         try {
             const result = await model.getAllCards(DEFAULT_USER_ID, setId, query, page, pageSize);
@@ -44,18 +45,6 @@ class CardController {
         const {setId} = req.params;
         const {question, answerLine1, answerLine2} = req.body;
 
-        if(!question || String(question).trim() == '') {
-            return next(new Error("Invalid or missing question!"));
-        }
-
-        if(!answerLine1 || String(answerLine1).trim() == '') {
-            return next(new Error("Invalid or missing answerLine1!"));
-        }
-
-        if(!answerLine2 || String(answerLine2).trim() == '') {
-            return next(new Error("Invalid or missing answerLine2!"));
-        }
-
         try {
             const result = await model.createCard(DEFAULT_USER_ID, setId, question, answerLine1, answerLine2);
             res.status(201).json({message: 'ok', cardId: result.cardId});
@@ -72,24 +61,8 @@ class CardController {
      * @param {*} next 
      */
     async updateCard(req, res, next) {
-        const cardId = parseInt(req.params.cardId, 10);
-        const {question, answerLine1, answerLine2} = req.body;
-
-        if(isNaN(cardId)) {
-            return res.status(400).json({message: 'missing or invalid cardId'});
-        } 
-
-        if(!question || String(question).trim() == '') {
-            return next(new Error("Invalid or missing question!"));
-        }
-
-        if(!answerLine1 || String(answerLine1).trim() == '') {
-            return next(new Error("Invalid or missing answerLine1!"));
-        }
-
-        if(!answerLine2 || String(answerLine2).trim() == '') {
-            return next(new Error("Invalid or missing answerLine2!"));
-        }
+        const { cardId } = req.params;
+        const { question, answerLine1, answerLine2 } = req.body;
 
         try {
             const result = await model.updateCard(DEFAULT_USER_ID, cardId, question, answerLine1, answerLine2);
@@ -110,11 +83,7 @@ class CardController {
      * @param {*} next 
      */
     async deleteCard(req, res, next) {
-        const cardId = parseInt(req.params.cardId, 10);
-
-        if(isNaN(cardId)) {
-            return res.status(400).json({message: 'missing or invalid cardId'});
-        } 
+        const { cardId } = req.params;
 
         try {
             const result = await model.deleteCard(DEFAULT_USER_ID, cardId);

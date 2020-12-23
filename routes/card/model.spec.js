@@ -268,11 +268,17 @@ describe('Cards Model', () => {
                 });
                 
                 it('returns the correct page', () => {
-                    expect(result).to.have.property('page').that.equals(0);
+                    expect(result)
+                        .to.have.property('page')
+                        .that.is.a('number')
+                        .that.equals(0);
                 });
                 
                 it('returns the number of pages', () => {
-                    expect(result).to.have.property('numPages').that.equals(1);
+                    expect(result)
+                        .to.have.property('numPages')
+                        .that.is.a('number')
+                        .that.equals(1);
                 });
             });
             
@@ -296,11 +302,24 @@ describe('Cards Model', () => {
                 
                 it('returns the number of pages', () => {
                     let expected = Math.ceil(NUM_CARDS_SET_1 / parseFloat(expectedPageSize));
-                    expect(result).to.have.property('numPages').that.equals(expected);
+                    expect(result)
+                        .to.have.property('numPages')
+                        .that.is.a('number')
+                        .that.equals(expected);
+                });
+
+                it('returns the total number of cards', () => {
+                    let expected = NUM_CARDS_SET_1;
+                    expect(result)
+                        .to.have.property('numCards')
+                        .that.is.a('number')
+                        .that.equals(expected);
                 });
                 
                 it('returns the correct number of cards', () => {
-                    expect(result).to.have.property('cards').that.has.lengthOf(expectedPageSize);
+                    expect(result)
+                        .to.have.property('cards')
+                        .that.has.lengthOf(expectedPageSize);
                 });
                 
                 describe('when the page does not exist', () => {
@@ -365,6 +384,54 @@ describe('Cards Model', () => {
             it('returns correct numItems', async () => {
                 const result = await testModel.countAllCards(testUser1, set1, QUERYSTRING);
                 expect(result).to.equal(1);
+            });
+        });
+    });
+
+    describe('createCard', () => {
+        let question;
+        let answer1;
+        let answer2;
+        let result;
+        beforeEach(async () => {
+            question = 'question' + Math.random();
+            answer1 = 'a1' + Math.random();
+            answer2 = 'a2' + Math.random();
+            result = await testModel.createCard(testUser1, set1, question, answer1, answer2)
+        });
+
+        it('returns the card id', () => {
+            expect(result)
+                .to.be.an('object')
+                .that.has.property('cardId')
+                .that.is.a('number');
+        });
+
+        describe('the created card', () => {
+            let card;
+            beforeEach(async () => {
+                card = await db.get(`SELECT * FROM HanraCard WHERE id = ${result.cardId}`);
+            });
+
+            it('contains the question', () => {
+                expect(card)
+                    .to.be.an('object')
+                    .that.has.property('question')
+                    .that.equals(question);
+            });
+
+            it('contains the answer 1', () => {
+                expect(card)
+                    .to.be.an('object')
+                    .that.has.property('answer_l1')
+                    .that.equals(answer1);
+            });
+
+            it('contains the answer 2', () => {
+                expect(card)
+                    .to.be.an('object')
+                    .that.has.property('answer_l2')
+                    .that.equals(answer2);
             });
         });
     });

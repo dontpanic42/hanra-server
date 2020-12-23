@@ -32,9 +32,6 @@ class SetController {
      */
     async getSetDetails(req, res, next) {
         const setId = parseInt(req.params.setId, 10);
-        if(isNaN(setId)) {
-            return res.status(400).json({message: 'missing or invalid setId'});
-        } 
 
         try {
             const result = await model.getSetDetails(DEFAULT_USER_ID, setId);
@@ -57,12 +54,8 @@ class SetController {
     async createSet(req, res, next) {
         const {setName, setDescription} = req.body;
 
-        if(!setName) {
-            return next(new Error("Invalid or missing name!"));
-        }
-
         try {
-            const result = await model.createSet(DEFAULT_USER_ID, setName, String(setDescription));
+            const result = await model.createSet(DEFAULT_USER_ID, setName, setDescription);
             res.status(201).json({message: 'ok', setId: result.setId});
 
         } catch(e) {
@@ -78,9 +71,6 @@ class SetController {
      */
     async deleteSet(req, res, next) {
         const setId = parseInt(req.params.setId, 10);
-        if(isNaN(setId)) {
-            return res.status(400).json({message: 'missing or invalid setId'});
-        } 
 
         try {
             const result = await model.deleteSet(DEFAULT_USER_ID, setId);

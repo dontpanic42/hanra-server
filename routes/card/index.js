@@ -1,5 +1,6 @@
 const express = require('express');
 const controller = require('./controller');
+const validations = require('./validations');
 
 const getRoutes = () => {
     const router = express.Router({mergeParams: true});
@@ -9,12 +10,12 @@ const getRoutes = () => {
     router
         .route('/')
         .get(   controller.getAllCards.bind(controller))
-        .post(  controller.createCard.bind(controller));
+        .post(validations.validateCreateCard, controller.createCard.bind(controller));
 
     router
         .route('/:cardId')
-        .put   ( controller.updateCard.bind(controller))
-        .delete( controller.deleteCard.bind(controller));
+        .put   (validations.validateUpdateCard, controller.updateCard.bind(controller))
+        .delete(validations.validateDeleteCard, controller.deleteCard.bind(controller));
 
     return router;
 }

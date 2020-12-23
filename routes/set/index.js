@@ -2,6 +2,7 @@ const express = require('express');
 const controller = require('./controller');
 const getCardRoutes = require('../card/index');
 const getSRRoutes = require('../sr/index');
+const validations = require('./validations');
 
 const getRoutes = () => {
     const router = express.Router();
@@ -10,13 +11,13 @@ const getRoutes = () => {
     
     router
         .route('/')
-        .post(  controller.createSet.bind(controller))
+        .post(validations.validateCreateSet, controller.createSet.bind(controller))
         .get(   controller.getAllSets.bind(controller));
 
     router
         .route('/:setId')
-        .delete(controller.deleteSet.bind(controller))
-        .get(   controller.getSetDetails.bind(controller));
+        .delete(validations.validateDeleteSet, controller.deleteSet.bind(controller))
+        .get(validations.validateGetSetDetails, controller.getSetDetails.bind(controller));
 
     router.use('/:setId/card', getCardRoutes());
     router.use('/:setId/sr', getSRRoutes());

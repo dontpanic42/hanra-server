@@ -88,6 +88,7 @@ class CardModel {
             page: page,
             pageSize: pageSize,
             numPages: numPages,
+            numCards: numCards,
             cards: result.map((e) => ({
                 id: e[COL_CARD_ID],
                 owner: e[COL_CARD_OWNER],
