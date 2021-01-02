@@ -4,6 +4,7 @@ const model = require('./model')(database);
 
 const DEFAULT_USER_ID = 1;
 const DEFAULT_PAGE_SIZE = 10;
+const DEFAULT_PAGE = 0;
 
 class CardController {
 
@@ -20,12 +21,9 @@ class CardController {
         // so we might need to set them to default values
         let { page, query, pageSize } = req.query;
         // toInt() is buggy in express-validator, we need to cast it ourselves :-|
-        page = typeof(page) === 'undefined' ? parseInt(page, 10) : 0;
-        pageSize = typeof(pageSize) === 'undefined' ? parseInt(pageSize, 10) : DEFAULT_PAGE_SIZE;
+        page = typeof(page) === 'undefined' ? DEFAULT_PAGE : parseInt(page, 10);
+        pageSize = typeof(pageSize) === 'undefined' ? DEFAULT_PAGE_SIZE : parseInt(pageSize, 10);
         query = query || String();
-
-        console.log('got page', page, typeof(page));
-        console.log('got pageSize', pageSize, typeof(pageSize));
 
         try {
             const result = await model.getAllCards(DEFAULT_USER_ID, setId, query, page, pageSize);
