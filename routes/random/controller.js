@@ -10,13 +10,14 @@ const model = new RandomModel(database);
 class RandomController {
 
     async getRandomCard(req, res, next) {
-        const setId = parseInt(req.params.setId, 10);   
+        const setId = parseInt(req.params.setId, 10);
+        const cardType = req.query.type;
 
         try {
             // Fetch user settings
             const settings = await settingsModel.getSettings(DEFAULT_USER_ID);
             // Get the session
-            const result = await model.getRandomCard(DEFAULT_USER_ID, setId, settings);
+            const result = await model.getRandomCard(DEFAULT_USER_ID, setId, settings, cardType);
             res.json({
                 card: result
             });

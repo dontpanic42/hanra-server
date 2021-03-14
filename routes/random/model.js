@@ -15,10 +15,10 @@ class RandomModel {
 
         let cutoffWhereClause = String();
         let cutoffParams = {};
+        cutoffParams[':cutoff'] = parseInt(settings.srSessionNewCutoffDays, 10);
+        cutoffParams[':cutoff'] = `-${Math.abs(cutoffParams[':cutoff'])} days`;
         if(type == RandomModel.RANDOM_CARD_TYPE.NEW) {
             cutoffWhereClause = `createdAt > datetime('now', :cutoff) AND`;
-            cutoffParams[':cutoff'] = parseInt(settings.srSessionNewCutoffDays, 10);
-            cutoffParams[':cutoff'] = `-${Math.abs(cutoffParams[':cutoff'])} days`;
         }
 
         const query = `
@@ -28,7 +28,13 @@ class RandomModel {
                 question, 
                 answer_l1 as answerLine1,
                 answer_l2 as answerLine2,
-                createdAt
+                createdAt,
+                CASE
+                    WHEN createdAt > datetime('now', :cutoff)
+                        THEN 'new'
+                    ELSE
+                        'review'
+                END type
             FROM
                 ${TBL_CARD}
             WHERE

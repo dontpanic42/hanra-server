@@ -63,17 +63,19 @@ describe('Random Model', () => {
 
         describe('when calling without type', async () => {
             let results;
-
+            let resultCards;
             beforeEach(async () => {
                 
                 results = [];
+                resultCards = [];
                 for(let i = 0; i < 20; i++) {
                     const card = await testModel.getRandomCard(testUser, testSet, testSettings);
                     results.push(card.id);
+                    resultCards.push(card);
                 }
             });
 
-            describe('the resulting objects', () => {
+            describe('the result', () => {
                 let numOldCards;
                 let numNewCards;
 
@@ -95,6 +97,32 @@ describe('Random Model', () => {
                     expect(numNewCards).to.be.greaterThan(0);
                 });
             });
+
+            describe('the resulting cards', () => {
+                describe('each old card', () => {
+                    let cards;
+                    beforeEach(() => {
+                        cards = resultCards.filter(card => oldCardIds.indexOf(card.id) !== -1);
+                    });
+
+                    it('has type "review"', () => {
+                        expect(cards.length).to.be.greaterThan(0);
+                        expect(cards.every(card => card.type === 'review')).to.be.true;
+                    });
+                });
+
+                describe('each new card', () => {
+                    let cards;
+                    beforeEach(() => {
+                        cards = resultCards.filter(card => newCardIds.indexOf(card.id) !== -1);
+                    });
+
+                    it('has type "new"', () => {
+                        expect(cards.length).to.be.greaterThan(0);
+                        expect(cards.every(card => card.type === 'new')).to.be.true;
+                    });
+                })
+            });
         });
 
         describe('when calling with type "ALL"', async () => {
@@ -109,7 +137,7 @@ describe('Random Model', () => {
                 }
             });
 
-            describe('the resulting objects', () => {
+            describe('the result', () => {
                 let numOldCards;
                 let numNewCards;
 
@@ -147,7 +175,7 @@ describe('Random Model', () => {
                 }
             });
 
-            describe('the resulting objects', () => {
+            describe('the result', () => {
                 let numOldCards;
                 let numNewCards;
 
