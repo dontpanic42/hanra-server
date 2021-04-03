@@ -2,7 +2,7 @@ const express = require('express');
 const controller = require('./controller');
 const getCardRoutes = require('../card/index');
 const getSRRoutes = require('../sr/index');
-const getRandomCard = require('../random/index');
+const getRandomCards = require('../random/index');
 const validations = require('./validations');
 
 const getRoutes = () => {
@@ -23,7 +23,7 @@ const getRoutes = () => {
     router.use('/:setId/card', getCardRoutes());
     router.use('/:setId/sr', getSRRoutes());
 
-    router.use('/:setId/random', getRandomCard());
+    router.use('/:setId/random', getRandomCards());
 
     return router;
 }

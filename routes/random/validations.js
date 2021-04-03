@@ -2,7 +2,7 @@ const { query, param, validationResult } = require('express-validator')
 const RandomModel = require('./model');
 
 module.exports = {
-    'validateGetRandomCard': [
+    'validateGetRandomCards': [
         param('setId')
         .exists()
         .isInt(),
@@ -19,6 +19,9 @@ module.exports = {
         .isIn([
             RandomModel.RANDOM_CARD_TYPE.NEW, 
             RandomModel.RANDOM_CARD_TYPE.ALL]),
+        query('max')
+        .optional()
+        .isInt(),
         (req, res, next) => {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {

@@ -9,7 +9,7 @@ const getRoutes = () => {
     
     router
         .route('/')
-        .get(validations.validateGetRandomCard, controller.getRandomCard.bind(controller))
+        .get(validations.validateGetRandomCards, controller.getRandomCards.bind(controller))
 
     return router;
 }

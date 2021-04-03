@@ -59,7 +59,39 @@ describe('Random Model', () => {
         }
     });
 
-    describe('getRandomCard', () => {
+    describe('getRandomCards', () => {
+
+        describe('when supplying a maxItems parameter', () => {
+            let maxItems;
+            let numItemsInSet;
+            let resultSet;
+
+            describe('when the set contains more then maxItems items', () => {
+                beforeEach(async () => {
+                    numItemsInSet = NUM_NEW_CARDS_SET + NUM_OLD_CARDS_SET;
+                    maxItems = numItemsInSet - 2;
+                    
+                    resultSet = await testModel.getRandomCards(testUser, testSet, testSettings, maxItems);
+                });
+
+                it('returns maxItems items', () => {
+                    expect(resultSet).to.have.lengthOf(maxItems);
+                });
+            });
+
+            describe('when the set contains less than maxItems items', () => {
+                beforeEach(async () => {
+                    numItemsInSet = NUM_NEW_CARDS_SET + NUM_OLD_CARDS_SET;
+                    maxItems = numItemsInSet + 2;
+                    
+                    resultSet = await testModel.getRandomCards(testUser, testSet, testSettings, maxItems);
+                });
+
+                it('returns all cards in the set', () => {
+                    expect(resultSet).to.have.lengthOf(numItemsInSet);
+                });
+            });
+        });
 
         describe('when calling without type', async () => {
             let results;
@@ -69,7 +101,9 @@ describe('Random Model', () => {
                 results = [];
                 resultCards = [];
                 for(let i = 0; i < 20; i++) {
-                    const card = await testModel.getRandomCard(testUser, testSet, testSettings);
+                    const cards = await testModel.getRandomCards(testUser, testSet, testSettings, 10);
+                    const card = cards[0];
+
                     results.push(card.id);
                     resultCards.push(card);
                 }
@@ -132,7 +166,9 @@ describe('Random Model', () => {
                 
                 results = [];
                 for(let i = 0; i < 20; i++) {
-                    const card = await testModel.getRandomCard(testUser, testSet, testSettings, model.RANDOM_CARD_TYPE.ALL);
+                    const cards = await testModel.getRandomCards(testUser, testSet, testSettings, 100, model.RANDOM_CARD_TYPE.ALL);
+                    const card = cards[0];
+
                     results.push(card.id);
                 }
             });
@@ -168,7 +204,9 @@ describe('Random Model', () => {
                 
                 results = [];
                 for(let i = 0; i < 20; i++) {
-                    const card = await testModel.getRandomCard(testUser, testSet, testSettings, model.RANDOM_CARD_TYPE.NEW);
+                    const cards = await testModel.getRandomCards(testUser, testSet, testSettings, 100, model.RANDOM_CARD_TYPE.NEW);
+                    const card = cards[0];
+
                     if(card) {
                         results.push(card.id);
                     }

@@ -11,7 +11,7 @@ class RandomModel {
         this._database = database;
     }
 
-    async getRandomCard(ownerId, setId, settings, type=RandomModel.RANDOM_CARD_TYPE.ALL) {
+    async getRandomCards(ownerId, setId, settings, maxItems, type=RandomModel.RANDOM_CARD_TYPE.ALL) {
 
         let cutoffWhereClause = String();
         let cutoffParams = {};
@@ -43,15 +43,17 @@ class RandomModel {
                 ownerId = :ownerId
             ORDER BY
                 RANDOM()
-            LIMIT 1
+            LIMIT 
+                :maxItems
         `;
 
-        const card = await this.db.get(query, Object.assign({
+        const cards = await this.db.all(query, Object.assign({
             ':ownerId': ownerId,
             ':setId': setId,
+            ':maxItems': maxItems,
         }, cutoffParams));
 
-        return card;
+        return cards;
     }
 
     get db() {
