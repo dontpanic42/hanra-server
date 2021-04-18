@@ -109,6 +109,7 @@ class CardModel {
      * @param {String} answerLine2 
      */
     async createCard(ownerId, setId, question, answerLine1, answerLine2) {
+
         const result = await this.db.run(`INSERT INTO ` +
             `${TBL_CARD}('${COL_CARD_SET}', '${COL_CARD_OWNER}', '${COL_CARD_Q}', '${COL_CARD_AL1}', '${COL_CARD_AL2}') ` +
             `VALUES (:setId, :ownerId, :cardQuestion, :cardAnswer1, :cardAnswer2)`, {

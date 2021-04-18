@@ -19,13 +19,11 @@ module.exports = {
         .exists()
         .isString()
         .trim()
-        .escape()
         .isLength({min: 3}),
         body('setDescription')
         .optional()
         .isString()
         .trim()
-        .escape()
         .isLength({min: 3}),
         (req, res, next) => {
             const errors = validationResult(req);

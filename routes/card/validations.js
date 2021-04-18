@@ -29,19 +29,16 @@ module.exports = {
         .exists()
         .isString()
         .trim()
-        .escape()
         .isLength({min: 1}),
         body('answerLine1')
         .exists()
         .isString()
         .trim()
-        .escape()
         .isLength({min: 1}),
         body('answerLine2')
         .exists()
         .isString()
         .trim()
-        .escape()
         .isLength({min: 1}),
         (req, res, next) => {
             const errors = validationResult(req);
@@ -60,19 +57,16 @@ module.exports = {
         .exists()
         .isString()
         .trim()
-        .escape()
         .isLength({min: 1}),
         body('answerLine1')
         .exists()
         .isString()
         .trim()
-        .escape()
         .isLength({min: 1}),
         body('answerLine2')
         .exists()
         .isString()
         .trim()
-        .escape()
         .isLength({min: 1}),
         (req, res, next) => {
             const errors = validationResult(req);
