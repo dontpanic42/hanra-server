@@ -41,7 +41,7 @@ describe('SRSession Model', () => {
         // Create some cards
         cardIds = [];
         for(let i = 0; i < NUM_CARDS_SET; i++) {
-            r = await db.run(`INSERT INTO HanraCard (ownerId, setId, question, answer_l1, answer_l2) VALUES
+            r = await db.run(`INSERT INTO HanraCard (ownerId, setId, question, answerWordPinyin, answerWordHanzi) VALUES
             (${testUser}, ${testSet}, 'test_q_${i}', 'test_a1_${i}', 'test_a2_${i}')`);
             cardIds.push(r.lastID);
         }
@@ -276,7 +276,7 @@ describe('SRSession Model', () => {
             createCard = async () => {
                 const r = await db.run(`
                 INSERT INTO 
-                    HanraCard (ownerId, setId, question, answer_l1, answer_l2) 
+                    HanraCard (ownerId, setId, question, answerWordPinyin, answerWordHanzi) 
                 VALUES 
                     (${userId}, ${setId}, "a", "b", "c")
                 `);

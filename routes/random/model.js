@@ -26,8 +26,11 @@ class RandomModel {
                 id, 
                 ownerId, 
                 question, 
-                answer_l1 as answerLine1,
-                answer_l2 as answerLine2,
+                answerWordPinyin,
+                answerWordHanzi,
+                answerMeasurePinyin,
+                answerMeasureHanzi,
+                answerExample,
                 createdAt,
                 CASE
                     WHEN createdAt > datetime('now', :cutoff)

@@ -39,13 +39,13 @@ describe('Cards Model', () => {
         
         // Create some random cards
         for(let i = 0; i < NUM_CARDS_SET_1; i++) {
-            await db.run(`INSERT INTO HanraCard (ownerId, setId, question, answer_l1, answer_l2) VALUES
-            (${testUser1}, ${set1}, 'test_q_${i}', 'test_a1_${i}', 'test_a2_${i}')`);
+            await db.run(`INSERT INTO HanraCard (ownerId, setId, question, answerWordPinyin, answerWordHanzi, answerMeasurePinyin, answerMeasureHanzi, answerExample) VALUES
+            (${testUser1}, ${set1}, 'test_q_${i}', 'test_a1_${i}', 'test_a2_${i}', 'test_mwp_${i}', 'test_mwh_${i}', 'test_aex_${i}')`);
         }
         
         for(let i = 0; i < NUM_CARDS_SET_2; i++) {
-            await db.run(`INSERT INTO HanraCard (ownerId, setId, question, answer_l1, answer_l2) VALUES
-            (${testUser2}, ${set2}, 'test_q_${i}', 'test_a1_${i}', 'test_a2_${i}')`);
+            await db.run(`INSERT INTO HanraCard (ownerId, setId, question, answerWordPinyin, answerWordHanzi, answerMeasurePinyin, answerMeasureHanzi, answerExample) VALUES
+            (${testUser2}, ${set2}, 'test_q_${i}', 'test_a1_${i}', 'test_a2_${i}', 'test_mwp_${i}', 'test_mwh_${i}', 'test_aex_${i}')`);
         }
     });
     
@@ -54,7 +54,7 @@ describe('Cards Model', () => {
         let getCard;
         let newq, newa1, newa2;
         beforeEach(async () => {
-            const r = await db.run(`INSERT INTO HanraCard (ownerId, setId, question, answer_l1, answer_l2) VALUES
+            const r = await db.run(`INSERT INTO HanraCard (ownerId, setId, question, answerWordPinyin, answerWordHanzi) VALUES
             (${testUser1}, ${set1}, 'test_q_d', 'test_a1_d', 'test_a2_d')`);
             cardId = r.lastID;
             getCard = async () => {  return await db.get(`SELECT * FROM HanraCard WHERE id = ${cardId}`); };
@@ -71,15 +71,19 @@ describe('Cards Model', () => {
             
             describe('when updating the card', async () => {
                 it('updates the values', async () => {
-                    const r = await testModel.updateCard(user, cardId, newq, newa1, newa2);
+                    const r = await testModel.updateCard(user, cardId, {
+                        question: newq, 
+                        answerWordPinyin: newa1, 
+                        answerWordHanzi: newa2
+                    });
                     
                     expect(r.numUpdated).to.equal(1);
                     
                     const c = await getCard();
                     
                     expect(c).to.have.property('question').that.equals(newq);
-                    expect(c).to.have.property('answer_l1').that.equals(newa1);
-                    expect(c).to.have.property('answer_l2').that.equals(newa2);
+                    expect(c).to.have.property('answerWordPinyin').that.equals(newa1);
+                    expect(c).to.have.property('answerWordHanzi').that.equals(newa2);
                 });
             });
             
@@ -90,7 +94,11 @@ describe('Cards Model', () => {
                 });            
                 
                 it('returns zero updated', async () => {
-                    const r = await testModel.updateCard(user, cardId, newq, newa1, newa2);
+                    const r = await testModel.updateCard(user, cardId, {
+                        question: newq, 
+                        answerWordPinyin: newa1, 
+                        answerWordHanzi: newa2
+                    });
                     
                     expect(r.numUpdated).to.equal(0);
                 });
@@ -105,15 +113,19 @@ describe('Cards Model', () => {
             
             describe('when updating the card', async () => {
                 it('does not update the values', async () => {
-                    const r = await testModel.updateCard(user, cardId, newq, newa1, newa2);
+                    const r = await testModel.updateCard(user, cardId, {
+                        question: newq, 
+                        answerWordPinyin: newa1, 
+                        answerWordHanzi: newa2
+                    });
                     
                     expect(r.numUpdated).to.equal(0);
                     
                     const c = await getCard();
                     
                     expect(c).to.have.property('question').that.not.equals(newq);
-                    expect(c).to.have.property('answer_l1').that.not.equals(newa1);
-                    expect(c).to.have.property('answer_l2').that.not.equals(newa2);
+                    expect(c).to.have.property('answerWordPinyin').that.not.equals(newa1);
+                    expect(c).to.have.property('answerWordHanzi').that.not.equals(newa2);
                 });
             });
         });
@@ -124,7 +136,7 @@ describe('Cards Model', () => {
         let getNumCards;
         let getCardIsPresent;
         beforeEach(async () => {
-            const r = await db.run(`INSERT INTO HanraCard (ownerId, setId, question, answer_l1, answer_l2) VALUES
+            const r = await db.run(`INSERT INTO HanraCard (ownerId, setId, question, answerWordPinyin, answerWordHanzi) VALUES
             (${testUser1}, ${set1}, 'test_q_d', 'test_a1_d', 'test_a2_d')`);
             cardId = r.lastID;
             
@@ -182,7 +194,7 @@ describe('Cards Model', () => {
             const QUERYSTRING = 'fooobar';
             
             beforeEach(async () => {
-                await db.run(`INSERT INTO HanraCard (ownerId, setId, question, answer_l1, answer_l2) VALUES
+                await db.run(`INSERT INTO HanraCard (ownerId, setId, question, answerWordPinyin, answerWordHanzi) VALUES
                 (${testUser1}, ${set1}, 'test_${QUERYSTRING}q_x', 'test_a1_x', 'test_a2_x')`);
             });
             
@@ -196,7 +208,7 @@ describe('Cards Model', () => {
             const QUERYSTRING = 'fooobar';
             
             beforeEach(async () => {
-                await db.run(`INSERT INTO HanraCard (ownerId, setId, question, answer_l1, answer_l2) VALUES
+                await db.run(`INSERT INTO HanraCard (ownerId, setId, question, answerWordPinyin, answerWordHanzi) VALUES
                 (${testUser1}, ${set1}, 'test_q_x', 'test_a1${QUERYSTRING}_x', 'test_a2_x')`);
             });
             
@@ -210,7 +222,7 @@ describe('Cards Model', () => {
             const QUERYSTRING = 'fooobar';
             
             beforeEach(async () => {
-                await db.run(`INSERT INTO HanraCard (ownerId, setId, question, answer_l1, answer_l2) VALUES
+                await db.run(`INSERT INTO HanraCard (ownerId, setId, question, answerWordPinyin, answerWordHanzi) VALUES
                 (${testUser1}, ${set1}, 'test_q_x', 'test_a1_x', 'test_a2${QUERYSTRING}_x')`);
             });
             
@@ -238,7 +250,7 @@ describe('Cards Model', () => {
                 
                 result.cards.forEach((card) => {
                     // Ensure that only the expected keys are there
-                    expect(card).to.have.all.keys('id', 'owner', 'set', 'question', 'answerLine1', 'answerLine2');
+                    expect(card).to.have.all.keys('id', 'owner', 'set', 'question', 'answerWordPinyin', 'answerWordHanzi', 'answerMeasurePinyin', 'answerMeasureHanzi', 'answerExample');
                 });
             });        
             
@@ -250,8 +262,8 @@ describe('Cards Model', () => {
                     expect(card).to.have.property('owner').that.equals(testUser1);
                     expect(card).to.have.property('set').that.equals(set1);
                     expect(card).to.have.property('question').that.is.not.empty;
-                    expect(card).to.have.property('answerLine1').that.is.not.empty;
-                    expect(card).to.have.property('answerLine2').that.is.not.empty;
+                    expect(card).to.have.property('answerWordPinyin').that.is.not.empty;
+                    expect(card).to.have.property('answerWordHanzi').that.is.not.empty;
                 });
             });
             
@@ -349,7 +361,7 @@ describe('Cards Model', () => {
             const QUERYSTRING = 'fooobar';
             
             beforeEach(async () => {
-                await db.run(`INSERT INTO HanraCard (ownerId, setId, question, answer_l1, answer_l2) VALUES
+                await db.run(`INSERT INTO HanraCard (ownerId, setId, question, answerWordPinyin, answerWordHanzi) VALUES
                 (${testUser1}, ${set1}, 'test_${QUERYSTRING}q_x', 'test_a1_x', 'test_a2_x')`);
             });
             
@@ -363,7 +375,7 @@ describe('Cards Model', () => {
             const QUERYSTRING = 'fooobar';
             
             beforeEach(async () => {
-                await db.run(`INSERT INTO HanraCard (ownerId, setId, question, answer_l1, answer_l2) VALUES
+                await db.run(`INSERT INTO HanraCard (ownerId, setId, question, answerWordPinyin, answerWordHanzi) VALUES
                 (${testUser1}, ${set1}, 'test_q_x', 'test_a1${QUERYSTRING}_x', 'test_a2_x')`);
             });
             
@@ -377,7 +389,7 @@ describe('Cards Model', () => {
             const QUERYSTRING = 'fooobar';
             
             beforeEach(async () => {
-                await db.run(`INSERT INTO HanraCard (ownerId, setId, question, answer_l1, answer_l2) VALUES
+                await db.run(`INSERT INTO HanraCard (ownerId, setId, question, answerWordPinyin, answerWordHanzi) VALUES
                 (${testUser1}, ${set1}, 'test_q_x', 'test_a1_x', 'test_a2${QUERYSTRING}_x')`);
             });
             
@@ -395,9 +407,19 @@ describe('Cards Model', () => {
         let result;
         beforeEach(async () => {
             question = 'question' + Math.random();
-            answer1 = 'a1' + Math.random();
-            answer2 = 'a2' + Math.random();
-            result = await testModel.createCard(testUser1, set1, question, answer1, answer2)
+            answerWordPinyin = 'a1' + Math.random();
+            answerWordHanzi = 'a2' + Math.random();
+            answerMeasurePinyin = 'mwp' + Math.random();
+            answerMeasureHanzi = 'mwp' + Math.random();
+            answerExample = 'ex' + Math.random();
+            result = await testModel.createCard(testUser1, set1, {
+                question,
+                answerWordPinyin: answerWordPinyin,
+                answerWordHanzi: answerWordHanzi,
+                answerMeasurePinyin: answerMeasurePinyin, 
+                answerMeasureHanzi: answerMeasureHanzi, 
+                answerExample: answerExample
+            })
         });
 
         it('returns the card id', () => {
@@ -420,18 +442,39 @@ describe('Cards Model', () => {
                     .that.equals(question);
             });
 
-            it('contains the answer 1', () => {
+            it('contains the answerWordPinyin', () => {
                 expect(card)
                     .to.be.an('object')
-                    .that.has.property('answer_l1')
-                    .that.equals(answer1);
+                    .that.has.property('answerWordPinyin')
+                    .that.equals(answerWordPinyin);
             });
 
-            it('contains the answer 2', () => {
+            it('contains the answerWordHanzi', () => {
                 expect(card)
                     .to.be.an('object')
-                    .that.has.property('answer_l2')
-                    .that.equals(answer2);
+                    .that.has.property('answerWordHanzi')
+                    .that.equals(answerWordHanzi);
+            });
+
+            it('contains the answerMeasurePinyin', () => {
+                expect(card)
+                    .to.be.an('object')
+                    .that.has.property('answerMeasurePinyin')
+                    .that.equals(answerMeasurePinyin);
+            });
+
+            it('contains the answerMeasureHanzi', () => {
+                expect(card)
+                    .to.be.an('object')
+                    .that.has.property('answerMeasureHanzi')
+                    .that.equals(answerMeasureHanzi);
+            });
+
+            it('contains the answerExample', () => {
+                expect(card)
+                    .to.be.an('object')
+                    .that.has.property('answerExample')
+                    .that.equals(answerExample);
             });
         });
     });

@@ -30,13 +30,28 @@ module.exports = {
         .isString()
         .trim()
         .isLength({min: 1}),
-        body('answerLine1')
+        body('answerWordPinyin')
         .exists()
         .isString()
         .trim()
         .isLength({min: 1}),
-        body('answerLine2')
+        body('answerWordHanzi')
         .exists()
+        .isString()
+        .trim()
+        .isLength({min: 1}),
+        body('answerMeasurePinyin')
+        .optional()
+        .isString()
+        .trim()
+        .isLength({min: 1}),
+        body('answerMeasureHanzi')
+        .optional()
+        .isString()
+        .trim()
+        .isLength({min: 1}),
+        body('answerExample')
+        .optional()
         .isString()
         .trim()
         .isLength({min: 1}),
@@ -58,13 +73,28 @@ module.exports = {
         .isString()
         .trim()
         .isLength({min: 1}),
-        body('answerLine1')
+        body('answerWordPinyin')
         .exists()
         .isString()
         .trim()
         .isLength({min: 1}),
-        body('answerLine2')
+        body('answerWordHanzi')
         .exists()
+        .isString()
+        .trim()
+        .isLength({min: 1}),
+        body('answerMeasurePinyin')
+        .optional()
+        .isString()
+        .trim()
+        .isLength({min: 1}),
+        body('answerMeasureHanzi')
+        .optional()
+        .isString()
+        .trim()
+        .isLength({min: 1}),
+        body('answerExample')
+        .optional()
         .isString()
         .trim()
         .isLength({min: 1}),

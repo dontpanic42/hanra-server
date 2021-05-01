@@ -3,8 +3,11 @@ const COL_CARD_ID = 'id';
 const COL_CARD_OWNER = 'ownerId';
 const COL_CARD_SET = 'setId';
 const COL_CARD_Q = 'question';
-const COL_CARD_AL1 = 'answer_l1';
-const COL_CARD_AL2 = 'answer_l2';
+const COL_CARD_AL1 = 'answerWordPinyin';
+const COL_CARD_AL2 = 'answerWordHanzi';
+const COL_CARD_MWP = 'answerMeasurePinyin';
+const COL_CARD_MWH = 'answerMeasureHanzi';
+const COL_CARD_EX = 'answerExample';
 
 class CardModel {
     constructor(database) {
@@ -54,7 +57,10 @@ class CardModel {
                 ${COL_CARD_SET},
                 ${COL_CARD_Q}, 
                 ${COL_CARD_AL1}, 
-                ${COL_CARD_AL2}
+                ${COL_CARD_AL2},
+                ${COL_CARD_MWP},
+                ${COL_CARD_MWH},
+                ${COL_CARD_EX}
             FROM 
                 ${TBL_CARD} 
             WHERE 
@@ -94,30 +100,62 @@ class CardModel {
                 owner: e[COL_CARD_OWNER],
                 set: e[COL_CARD_SET],
                 question: e[COL_CARD_Q],
-                answerLine1: e[COL_CARD_AL1],
-                answerLine2: e[COL_CARD_AL2]
+                answerWordPinyin:    e[COL_CARD_AL1],
+                answerWordHanzi:     e[COL_CARD_AL2],
+                // Optional fields: don't want to use 'null', so we'll need to check
+                answerMeasurePinyin: e[COL_CARD_MWP] === null ? undefined : e[COL_CARD_MWP],
+                answerMeasureHanzi:  e[COL_CARD_MWH] === null ? undefined : e[COL_CARD_MWH],
+                answerExample:       e[COL_CARD_EX]  === null ? undefined : e[COL_CARD_EX],
             }))
-        };
+        }; 
     }
 
     /**
      * Creates a new card in a set
      * @param {Number} ownerId 
      * @param {Number} setId 
-     * @param {String} question 
-     * @param {String} answerLine1 
-     * @param {String} answerLine2 
+     * @param {Object} values
      */
-    async createCard(ownerId, setId, question, answerLine1, answerLine2) {
+    async createCard(ownerId, setId, values) {
+
+        // Sanitize values - if values only contain empty spaces, convert it
+        // to undefined
+        Object.keys(values).forEach(key => {
+            if(typeof(values[key]) == 'string') {
+                values[key] = values[key].trim();
+                if(values[key] == '') {
+                    values[key] = undefined;
+                }
+            }
+        });
 
         const result = await this.db.run(`INSERT INTO ` +
-            `${TBL_CARD}('${COL_CARD_SET}', '${COL_CARD_OWNER}', '${COL_CARD_Q}', '${COL_CARD_AL1}', '${COL_CARD_AL2}') ` +
-            `VALUES (:setId, :ownerId, :cardQuestion, :cardAnswer1, :cardAnswer2)`, {
+            `${TBL_CARD}(
+                '${COL_CARD_SET}', 
+                '${COL_CARD_OWNER}', 
+                '${COL_CARD_Q}', 
+                '${COL_CARD_AL1}', 
+                '${COL_CARD_AL2}', 
+                '${COL_CARD_MWP}', 
+                '${COL_CARD_MWH}', 
+                '${COL_CARD_EX}')
+            VALUES (
+                :setId, 
+                :ownerId, 
+                :cardQuestion, 
+                :answerWordPinyin, 
+                :answerWordHanzi, 
+                :answerMeasurePinyin, 
+                :answerMeasureHanzi, 
+                :answerExample)`, {
             ':setId': setId,
             ':ownerId': ownerId,
-            ':cardQuestion': question,
-            ':cardAnswer1': answerLine1,
-            ':cardAnswer2': answerLine2
+            ':cardQuestion': values.question,
+            ':answerWordPinyin': values.answerWordPinyin,
+            ':answerWordHanzi': values.answerWordHanzi,
+            ':answerMeasurePinyin': values.answerMeasurePinyin,
+            ':answerMeasureHanzi': values.answerMeasureHanzi,
+            ':answerExample': values.answerExample
         });
 
         return { cardId: result.lastID };
@@ -128,18 +166,31 @@ class CardModel {
      * preserving learn progress
      * @param {*} ownerId 
      * @param {*} cardId 
-     * @param {*} question 
-     * @param {*} answerLine1 
-     * @param {*} answerLine2 
+     * @param {Object} values
      */
-    async updateCard(ownerId, cardId, question, answerLine1, answerLine2) {
+    async updateCard(ownerId, cardId, values) {
+
+        // Sanitize values - if values only contain empty spaces, convert it
+        // to undefined
+        Object.keys(values).forEach(key => {
+            if(typeof(values[key]) == 'string') {
+                values[key] = values[key].trim();
+                if(values[key] == '') {
+                    values[key] = undefined;
+                }
+            }
+        });
+
         const updateQuery = `
             UPDATE 
                 ${TBL_CARD}
             SET
                 ${COL_CARD_Q} = :question,
-                ${COL_CARD_AL1} = :answerLine1,
-                ${COL_CARD_AL2} = :answerLine2
+                ${COL_CARD_AL1} = :answerWordPinyin,
+                ${COL_CARD_AL2} = :answerWordHanzi,
+                ${COL_CARD_MWP} = :answerMeasurePinyin,
+                ${COL_CARD_MWH} = :answerMeasureHanzi,
+                ${COL_CARD_EX} = :answerExample
             WHERE
                 ${COL_CARD_ID}      = :cardId AND
                 ${COL_CARD_OWNER}   = :ownerId
@@ -148,9 +199,12 @@ class CardModel {
         const result = await this.db.run(updateQuery, {
             ':cardId': cardId,
             ':ownerId': ownerId,
-            ':question': question,
-            ':answerLine1': answerLine1,
-            ':answerLine2': answerLine2
+            ':question': values.question,
+            ':answerWordPinyin': values.answerWordPinyin,
+            ':answerWordHanzi': values.answerWordHanzi,
+            ':answerMeasurePinyin': values.answerMeasurePinyin,
+            ':answerMeasureHanzi': values.answerMeasureHanzi,
+            ':answerExample': values.answerExample,
         });
 
         return { numUpdated: result.changes };

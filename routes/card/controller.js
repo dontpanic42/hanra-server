@@ -41,10 +41,24 @@ class CardController {
      */
     async createCard(req, res, next) {
         const {setId} = req.params;
-        const {question, answerLine1, answerLine2} = req.body;
+        const {
+            question, 
+            answerWordPinyin, 
+            answerWordHanzi, 
+            answerMeasurePinyin,
+            answerMeasureHanzi,
+            answerExample
+        } = req.body;
 
         try {
-            const result = await model.createCard(DEFAULT_USER_ID, setId, question, answerLine1, answerLine2);
+            const result = await model.createCard(DEFAULT_USER_ID, setId, {
+                question, 
+                answerWordPinyin, 
+                answerWordHanzi, 
+                answerMeasurePinyin,
+                answerMeasureHanzi,
+                answerExample
+            });
             res.status(201).json({message: 'ok', cardId: result.cardId});
 
         } catch(e) {
@@ -60,10 +74,24 @@ class CardController {
      */
     async updateCard(req, res, next) {
         const { cardId } = req.params;
-        const { question, answerLine1, answerLine2 } = req.body;
+        const {
+            question, 
+            answerWordPinyin, 
+            answerWordHanzi, 
+            answerMeasurePinyin,
+            answerMeasureHanzi,
+            answerExample
+        } = req.body;
 
         try {
-            const result = await model.updateCard(DEFAULT_USER_ID, cardId, question, answerLine1, answerLine2);
+            const result = await model.updateCard(DEFAULT_USER_ID, cardId, {
+                question, 
+                answerWordPinyin, 
+                answerWordHanzi, 
+                answerMeasurePinyin,
+                answerMeasureHanzi,
+                answerExample
+            });
             if(result.numUpdated == 0) {
                 return res.status(404).json({message: 'not found'});
             } else {

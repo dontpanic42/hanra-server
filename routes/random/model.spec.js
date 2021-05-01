@@ -45,16 +45,16 @@ describe('Random Model', () => {
         NUM_NEW_CARDS_SET = 3;
         newCardIds = [];
         for(let i = 0; i < NUM_NEW_CARDS_SET; i++) {
-            r = await db.run(`INSERT INTO HanraCard (ownerId, setId, question, answer_l1, answer_l2) VALUES
-            (${testUser}, ${testSet}, 'test_q_${i}', 'test_a1_${i}', 'test_a2_${i}')`);
+            let r = await db.run(`INSERT INTO HanraCard (ownerId, setId, question, answerWordPinyin, answerWordHanzi, answerMeasurePinyin, answerMeasureHanzi, answerExample) VALUES
+            (${testUser}, ${testSet}, 'test_q_${i}', 'test_a1_${i}', 'test_a2_${i}', 'test_mwp_${i}', 'test_mwh_${i}', 'test_aex_${i}')`);
             newCardIds.push(r.lastID);
         }
 
         NUM_OLD_CARDS_SET = 10;
         oldCardIds = [];
         for(let i = 0; i < NUM_OLD_CARDS_SET; i++) {
-            r = await db.run(`INSERT INTO HanraCard (ownerId, setId, question, answer_l1, answer_l2, createdAt) VALUES
-            (${testUser}, ${testSet}, 'test_q_${i}', 'test_a1_${i}', 'test_a2_${i}', datetime('now','-5 day','localtime'))`);
+            let r = await db.run(`INSERT INTO HanraCard (ownerId, setId, question, answerWordPinyin, answerWordHanzi, answerMeasurePinyin, answerMeasureHanzi, answerExample, createdAt) VALUES
+            (${testUser}, ${testSet}, 'test_q_${i}', 'test_a1_${i}', 'test_a2_${i}', 'test_mwp_${i}', 'test_mwh_${i}', 'test_aex_${i}', datetime('now','-5 day','localtime'))`);
             oldCardIds.push(r.lastID);
         }
     });
