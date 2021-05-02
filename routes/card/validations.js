@@ -38,23 +38,19 @@ module.exports = {
         body('answerWordHanzi')
         .exists()
         .isString()
-        .trim()
-        .isLength({min: 1}),
+        .trim(),
         body('answerMeasurePinyin')
         .optional()
         .isString()
-        .trim()
-        .isLength({min: 1}),
+        .trim(),
         body('answerMeasureHanzi')
         .optional()
         .isString()
-        .trim()
-        .isLength({min: 1}),
+        .trim(),
         body('answerExample')
         .optional()
         .isString()
-        .trim()
-        .isLength({min: 1}),
+        .trim(),
         (req, res, next) => {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -86,18 +82,15 @@ module.exports = {
         body('answerMeasurePinyin')
         .optional()
         .isString()
-        .trim()
-        .isLength({min: 1}),
+        .trim(),
         body('answerMeasureHanzi')
         .optional()
         .isString()
-        .trim()
-        .isLength({min: 1}),
+        .trim(),
         body('answerExample')
         .optional()
         .isString()
-        .trim()
-        .isLength({min: 1}),
+        .trim(),
         (req, res, next) => {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
